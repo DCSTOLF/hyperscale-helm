@@ -1,0 +1,23 @@
+#
+# Copyright (c) 2023, 2024 by Delphix. All rights reserved.
+  #
+  {{- if eq .Values.load.imageName "oracle-load-service" }}
+  {{- if (not .Values.instantClientPvcName) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    io.hyperscale.service: instant-client-pvc
+  name: instant-client-pvc
+  namespace: {{ .Values.namespace }}
+spec:
+  {{- if (.Values.instantClientAccessMode) }}
+  accessModes: {{ .Values.instantClientAccessMode | toYaml | nindent 2 }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.instantClientStorageSize }}
+  storageClassName: {{- if (not .Values.instantClientStorageClass) }} "" {{- else }} {{ .Values.instantClientStorageClass }} {{- end }}
+  volumeName: {{ .Values.instantClientPvName | default "instant-client-pv" }}
+  {{- end }}
+  {{- end }}

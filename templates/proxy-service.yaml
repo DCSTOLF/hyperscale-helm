@@ -1,0 +1,20 @@
+#
+# Copyright (c) 2024 by Delphix. All rights reserved.
+#
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.hyperscale.service: proxy
+  name: proxy
+  namespace: {{ .Values.namespace }}
+spec:
+  ports:
+    - name: "443"
+      port: 443
+      targetPort: 8443
+  selector:
+    io.hyperscale.service: proxy
+status:
+  loadBalancer: {}

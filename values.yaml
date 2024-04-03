@@ -1,0 +1,106 @@
+
+#
+# Copyright (c) 2023, 2024 by Delphix. All rights reserved.
+#
+
+# Setting value for namespace
+namespace: hyperscale-services
+# image pull policy, expected values are Always, IfNotPresent, Never
+imagePullPolicy: Always
+# credentials to fetch docker images from Delphix internal repository
+imageCredentials:
+  # registry to pull docker images from
+  registry: hyperscale.download.delphix.com/delphix-hyperscale
+  # username to login to docker registry
+  username: Rs0MPzCf70HJ
+  # password to login to docker registry
+  password: aaec8830-0974-485d-a530-d508138dfa81
+  # emailId for above username
+
+  email: <docker-registry-email>
+  # tag for docker images that will be pulled from above registry
+  tag: 19.0.0
+#serviceAccountName: hs-scc-sa
+
+#URLs for internal communication, you may not require to change these.
+maskingServiceBaseURL: http://masking-service/api
+loadServiceBaseURL: http://load-service/api
+unloadServiceBaseURL: http://unload-service/api
+# storage size for stage area
+stageStorageSize: 5Gi
+stageAccessMode: [ReadWriteMany]
+nfsStorageHost: 10.0.1.30
+nfsStorageExportPath: /domain0/group-2/appdata_container-812/appdata_timeflow-813/datafile
+nfsStorageMountOption: [nfsvers=4.2]
+#staging PV for static binding with corresponding PVC, this PV will be used if stagePvcName is not given
+#stagePvName: stage-storage-pv
+#instant client PV for static binding with corresponding PVC, it will be used if instantClientPvcName is not given
+#instantClientPvName: instant-client-pv
+#staging area PVC for static binding with Hyperscale services
+#stagePvcName: stage-storage-pvc
+#Storage class for stage Volume
+#stageStorageClass: manual
+
+# Setting storageClassName to replace default storageClass
+# storageClassName: gp2
+
+# flag to enable api_key based authentication
+apiKeyEnabled: true
+isOpenShift: false
+#isDev: true
+
+podSecurityContext:
+  runAsUser: 65436
+  runAsGroup: 50
+  fsGroup: 50
+proxy:
+  crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMwakNDQWJvQ0NRRGR3eVFkYTRuVllEQU5CZ2txaGtpRzl3MEJBUXNGQURBck1Rc3dDUVlEVlFRR0V3SlYKVXpFY01Cb0dBMVVFQXd3VFpHVnNjR2hwZUMxaGNHa3RaMkYwWlhkaGVUQWVGdzB5TWpBNU1qTXdPRE13TWpSYQpGdzB6TURFeU1UQXdPRE13TWpSYU1Dc3hDekFKQmdOVkJBWVRBbFZUTVJ3d0dnWURWUVFEREJOa1pXeHdhR2w0CkxXRndhUzFuWVhSbGQyRjVNSUlCSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQTMrQ0cKM0FaRVBjK3NyQ0tjbm9xNWUvNkRFbmwveHZwY0FYU0xKV3J3ZEJzckZCVGwrSlEvME9yanFHL1MzeGVra0F6aApuZ2lhZU9pYkNtK0IxNC94bFFzbythN1J0RngwZTVFVC8yVDJOZEtjTzg3ZnFOcmd2UmRCOWFNcDFvdHd1bkNvClM2VUxickRvTXN0Y2x4aE9qOGZRQ29iMHhDUXMyUnFVOHlMODVHNHBrQkgrbUkxc21NVmczUVZ1Nm9pMXhvN1YKdG9jZHpwcGR5RHdHTUxYeCs1NGxnN2VVVm5VdjZOUVNKQTVORlRJN1UrazB5bXlxWFUyOVhhdzJ0YzdtVUd0WQpjVkg4b04rL2lSbVliSHhETEloQUZDTFBwQk04UVM0MVNZbDh4c1QrcCs1ZERobEZyaVcvcFdVWXV6QmE5REVQCjNPYVZGcnNrd1llbFRNV1FZUUlEQVFBQk1BMEdDU3FHU0liM0RRRUJDd1VBQTRJQkFRQ281b2tDMWJFUUExZk0KL0lBU1lVbjFyZy9nWkp4cWNJT2JGNlFIa2R0SXQ4eEgwUkJSMGJWTnVxRmtDTUpHeVRPTEVRKzg1SlR4NzI5cwpMQ1hnTmsyUFZmS2ZoTkFxN205Z1BLbzYxakp4MGdLRlpMTi9SLzBHMm1vUHh3cWJxbDl2N2dsdzdNbGxOZklsCi81Mm1ySnNhZGxqbHVxSDNjU0huVlNSbnlQRWFJM013bkJ3OVJIcWMrTTcrS2tMV0JkNUtBMDFyZkgrMTdtNmEKS3o5cEhBVmhueStIbVpHbEVhVTFWc2IzcVM0ZEM3WnZnM0VpNWNPY3ZwM0NHVWlSVUlyVW1aK3Z4dC9wUjZBagpEYms4aUdFeXRVVjcyWlRQQ3E5U2h4N0FibXpIbm10SEJkcTdldWRheG9NYUZYeGRHaWZKWWUvNHd5ZEdxcjB5ClV5Z0ZCdmF2Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+  key: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2Z0lCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktnd2dnU2tBZ0VBQW9JQkFRRGY0SWJjQmtROXo2eXMKSXB5ZWlybDcvb01TZVgvRytsd0JkSXNsYXZCMEd5c1VGT1g0bEQvUTZ1T29iOUxmRjZTUURPR2VDSnA0NkpzSwpiNEhYai9HVkN5ajVydEcwWEhSN2tSUC9aUFkxMHB3N3p0K28ydUM5RjBIMW95bldpM0M2Y0toTHBRdHVzT2d5CnkxeVhHRTZQeDlBS2h2VEVKQ3paR3BUekl2emtiaW1RRWY2WWpXeVl4V0RkQlc3cWlMWEdqdFcyaHgzT21sM0kKUEFZd3RmSDduaVdEdDVSV2RTL28xQklrRGswVk1qdFQ2VFRLYktwZFRiMWRyRGExenVaUWExaHhVZnlnMzcrSgpHWmhzZkVNc2lFQVVJcytrRXp4QkxqVkppWHpHeFA2bjdsME9HVVd1SmIrbFpSaTdNRnIwTVEvYzVwVVd1eVRCCmg2Vk14WkJoQWdNQkFBRUNnZ0VCQUxHVGQ0VG9WNUtydW12akhGWEk5VzA3cUoycno4VjFhaXNoVlFsOTlISXoKNW95TU13bGtGZVpSbWZoTmtuYXdXekNEZHlZUjd1eittNVBBZEw0V0IrcFBxdFc1YTg3akV1VzhZcDlPWnRpMApVSVpFQmpYNlB3N2RkczB1K1kyYWx2VGJUVEtMSERGVmt5aFBGQWNwR1krRVR5azZlTVZuYUVkZ2hVc0JzcFJBCnJUd215UGFmZUhRMk9URDQxeUgxbWprVURBVDRlL2w1VXJWSkRVMlZOSERLaFkxZ1pKa1o0Q0FGejZmRzQ1QWEKemZFZnhDOVFZZ0xxMk94ZWtMVFJaN1FqUnZUdEVjM2loSjNJL2FZWFlTeEZwRk5YTE01QUlUVGpNd3Y0NjN2YgozRFJ0ZWkzMGYwM29RWjRCZnNid2ZOd1BQWWRHUGYxK1A4dFdiV1Fyd05FQ2dZRUE5Z2NzQzRvTXcrVmw5OXNlCm1FT3VzSWo3bGRyck5Fem9XT2JFOGpvRW9GUGg2MUI0d05Eb2JrdVBHbVJRQ0k0SHJQR3dqR1c4QUFNWEpaOG8KZVNneXhIeFpjemNPSk9xbE0wVmZ1dEN0enZrTWpYa1hrQjJMK2ptTHgySDZOazZPUVBCQXV2OW0zelpUMTFtVgpYY3lQVUN1MzJaaEhQcDcvR2VReHYrcU80eFVDZ1lFQTZQT0RQNUNJS0s0WmxnTmZ3UGxxVXArck1CZ0Z5Y3EyClZrMXdxY082ditkNXhaMFhqQTFjU3BYTWlVQTdCZXBoME56RXgwUUtvMHM1STd5NWU3R0ZLU3hoSmQ5NmNHUmkKUFFqaUJQaWkvTUVwbEp3RmdCVEV0Zm9BUHJOWDU1OEhUUjk2T2VYdFR0OHpmZzg3ZVR3VURLQ05zTnhWWE54NwpqQjF5N2F0QU94MENnWUVBaUg0c0ltN0JiRUV0bEJlOTNvM1dNZHlkYjJNWUVGa0dvcVBNNmZIa05TcTBjUCtoCkxwLzRBNURwNEtOOGYzS0VzWjhZNnB0YWRNdENJVDR1anlFTklWTTNzU0wvTnQzekx3R3kvWXJla3JBN0ZaWHoKeTZHSTBoYnhCSG5IL2k4UTN0Z3JvVk1tdUhtRWhEb1FFd3oxQ1c1bnZsR3NYUUtLMXN0eUNsNVFUWTBDZ1lCNApJM1l4NXhGQm9hQlNiSVVLbWRjS3E0djI3cnkxZUZVWEp6TU9hb0k2akYrUjJkV1dCaUh0MlZtMkF5a3RnTlpYCmlEUDM3SkJyN05TWUtMR2tLRVpibUthMWlJNjF2aCtvQ0pmQUpwYXdNZEtHOFB3cE5RektLUmZOUG1MOGNsaXEKbnF4RGhlQWdTQjVmU2UzTE5YL0ZqMXZqdFk1VXFPVVN1dkZWdjNjTnhRS0JnRm9WU1RSRlR5SjBsdWtGblR3QgpPRnI3ejJLRTlkVWlmajlFS203OW9CUnVSbUErSHBaQmRzOFVoL040dmh2QS93dHRzbTdVMXE3NmZMcXBiL2hZCmplcTdza3hpMnFEQkRhMlRLMWd6ZlByOTRGMnpnS3M0V2FKODAvV3BkaVlIaEhHekJRUVZoTVgzQ3ZqRGNraDgKVG9ad1piT2V0Vjc3T2hUV3l4K3FTK3RCCi0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0K
+  dhparam: LS0tLS1CRUdJTiBESCBQQVJBTUVURVJTLS0tLS0KTUlJQkNBS0NBUUVBLy8vLy8vLy8vLyt0K0ZSWW9ydEttcS9jVmlBblBUengyTG5GZzg0dE5wV3A0VFpCRkdRegorOHlUbmM0a216NzVmUy9qWTJNTWRkajJnYklDcnNSaGV0UGZIdFhWL1dWaEpEUDFIMThHYnRDRlkyVlZQZTBhCjg3VlhFMTUvVjhrMW1FOE1jT0RtaTNmaXBvbmE4Ky9vY2gzeFdLRTJyZWMxTUt6S1QwZzZlWHE4Q3JHQ3N5VDcKWWRFSXFVdXl5T1A3dVdyYXQyRFg5R2dkVDBLajNqbE45SzVXN2VkamNyc1pDd2VueU80S2JYQ2VBdnpoemZmaQo3TUEwQk0wb05DOWhrWEwrbk9tRmcvK09UeEl5N3ZLQmc4UCtPeHRNYjYxek83WDh2QzdDSUFYRmp2R0RmUmFECnNzYnpTaWJCc3UvNmlHdENPR0VvWEpmLy8vLy8vLy8vL3dJQkFnPT0KLS0tLS1FTkQgREggUEFSQU1FVEVSUy0tLS0tCg==
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+# Controller service level property values
+controller:
+  apiKeyCreate: true
+  apiVersionCompatibilityStrictCheck: false
+  loadServiceRequirepostload: true
+  executionStatusPollDuration: 120000
+  loggingLevelRoot: INFO
+  databaseStorageSize: 100Mi
+  skipUnloadSplitCountValidation: false
+  skipLoadSplitCountValidation: false
+  # Controller Service DB PVC name for static binding, if it's not given PVC will be created and bound to default storage class PV.
+  # dbPvcName: controller-data
+  cancelStatusPollDuration: 60000
+  #nodeName: minikube
+# Unload Service property values
+unload:
+  fetchRows: 10000
+  imageName: mssql-unload-service
+#  fileDelimiter: ,
+#  fileEnclosure: \u0022
+#  fileEscapeEnclosure: \u0022
+  loggingLevelRoot: INFO
+  databaseStorageSize: 100Mi
+  # Unload Service DB PVC name for static binding, if it's not given PVC will be created and bound to default storage class PV.
+  #dbPvcName: unload-data
+  #nodeName: minikube
+# Load Service property values
+load:
+  imageName: mssql-load-service
+  loggingLevelRoot: INFO
+  databaseStorageSize: 100Mi
+  # Load Service DB PVC name for static binding, if it's not given PVC will be created and bound to default storage class PV.
+  #dbPvcName: load-data
+  #nodeName: minikube
+# Masking Service property values
+masking:
+#  intelligentLoadBalance: true
+  loggingLevelRoot: INFO
+  databaseStorageSize: 100Mi
+  # Masking Service DB PVC name for static binding, if it's not given PVC will be created and bound to default storage class PV.
+  #dbPvcName: masking-data
+  #nodeName: minikube
+isDev: false

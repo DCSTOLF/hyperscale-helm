@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.hyperscale.service: masking-service
+  name: masking-service
+  namespace: {{ .Values.namespace }}
+spec:
+  ports:
+    - name: tcp
+      protocol: TCP
+      # Port the service listens on.
+      port: 80
+      # Port of the pod the service forwards the request to.
+      targetPort: 8080
+  selector:
+    io.hyperscale.service: masking-service
+status:
+  loadBalancer: {}

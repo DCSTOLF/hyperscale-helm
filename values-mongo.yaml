@@ -1,0 +1,25 @@
+#
+# Copyright (c) 2024 by Delphix. All rights reserved.
+#
+
+controllerServiceBaseURL: http://controller-service:8080/api
+
+# Controller service level property values
+controller:
+  loadServiceRequirepostload: false
+  sourceKeyFieldNames: database_name,collection_name
+  validateUnloadRowCountForStatus: false
+  validateMaskedRowCountForStatus: false                                       
+  validateLoadRowCountForStatus: false                                         
+  displayBytesInfoInStatus: true                                               
+  displayRowCountInStatus: true    
+
+# Unload Service property values
+unload:
+  imageName: mongo-unload-service
+  fetchRows: 10000
+  concurrentExportLimit: 10
+
+# Load Service property values
+load:
+  imageName: mongo-load-service

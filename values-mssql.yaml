@@ -1,0 +1,24 @@
+#
+# Copyright (c) 2024 by Delphix. All rights reserved.
+#
+
+# Controller service level property values
+controller:
+  skipUnloadSplitCountValidation: false
+  skipLoadSplitCountValidation: false
+
+# Unload Service property values
+unload:
+  fetchRows: 10000
+  imageName: mssql-unload-service
+#  fileDelimiter: ,
+#  fileEnclosure: \u0022
+#  fileEscapeEnclosure: \u0022
+
+# Load Service property values
+load:
+  imageName: mssql-load-service
+
+# Masking Service property values
+#masking:
+#  intelligentLoadBalance: true

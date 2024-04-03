@@ -1,0 +1,29 @@
+#
+# Copyright (c) 2024 by Delphix. All rights reserved.
+#
+
+  {{- if and (not .Values.stagePvName) (not .Values.stagePvcName) }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: stage-storage-pv
+  labels:
+    io.hyperscale.service: stage-storage-path
+#https://github.com/kubernetes/examples/tree/master/staging/volumes/nfs
+spec:
+  capacity:
+    storage: {{ .Values.stageStorageSize }}
+  {{- if ( .Values.stageAccessMode) }}
+  accessModes: {{ .Values.stageAccessMode | toYaml | nindent 2 }}
+  {{- end }}
+  {{- if and (.Values.nfsStorageHost) (.Values.nfsStorageExportPath) }}
+  {{- if (.Values.nfsStorageMountOption) }}
+  mountOptions: {{ .Values.nfsStorageMountOption | toYaml | nindent 2 }}
+  {{- end }}
+  nfs:
+    path: {{ .Values.nfsStorageExportPath }}
+    server: {{ .Values.nfsStorageHost }}
+  {{- end }}
+  storageClassName: {{- if (not .Values.stageStorageClass) }} "" {{- else }} {{ .Values.stageStorageClass }} {{- end }}
+  {{- end }}
+

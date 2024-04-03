@@ -1,0 +1,24 @@
+#
+# Copyright (c) 2023, 2024 by Delphix. All rights reserved.
+#
+
+  {{- if (not .Values.controller.dbPvcName) }}
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    io.hyperscale.service: controller-database-pvc
+  name: controller-database-pvc
+  namespace: {{ .Values.namespace }}
+spec:
+  {{- if .Values.storageClassName }}
+  storageClassName: {{ .Values.storageClassName }}
+  {{- end }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.controller.databaseStorageSize | quote }}
+status: {}
+  {{- end }}

@@ -1,0 +1,80 @@
+#
+# Copyright (c) 2024 by Delphix. All rights reserved.
+#
+
+# Do not update this field.
+connectorType: parquet
+
+# Specify source and target file type [FS for filesystem or AWS for S3]
+unloadStorageType: AWS
+loadStorageType: AWS
+
+# Enable following two properties if source files are on NFS
+#nfsUnloadStorageHost: 10.160.100.62
+#nfsUnloadStorageExportPath: /mount/path/of/source/files
+# Specify unload storage mount option.
+#unloadStorageMountOption: [nfsvers=4.2]
+
+# Enable the following property if source files are on filesystem storage
+#unloadStoragePath: /tmp
+
+# Unload storage PV for static binding with Hyperscale services
+#unloadStoragePvName: unload-storage-pv
+# Unload storage PVC for static binding with Hyperscale services
+#unloadStoragePvcName: unload-storage-pvc
+# Storage class for unload storage Volume
+#unloadStorageClass: manual
+# Specify unload storage size
+unloadStorageSize: 5Gi
+# Specify unload storage access mode
+unloadStorageAccessMode: [ReadWriteOnce]
+
+
+# Enable following two properties if load files should be on NFS
+#nfsLoadStorageHost: 10.160.100.62
+#nfsLoadStorageExportPath: /mount/path/to/load/files
+# Specify load storage mount option.
+#loadStorageMountOption: [nfsvers=4.2]
+
+# Enable the following property if load files must be on filesystem storage
+#loadStoragePath: /tmp
+
+# Load storage PV for static binding with Hyperscale services
+#loadStoragePvName: load-storage-pv
+# Load storage PVC for static binding with Hyperscale services
+#loadStoragePvcName: load-storage-pvc
+# Storage class for load storage Volume
+#loadStorageClass: manual
+# Specify load storage size
+loadStorageSize: 5Gi
+# Specify load storage access mode
+loadStorageAccessMode: [ReadWriteOnce]
+
+
+# Controller service level property values
+controller:
+  loadServiceRequirepostload: false
+  #sourceKeyFieldNames: database_name,collection_name
+
+
+# Unload Service property values
+unload:
+  imageName: parquet-unload-service
+  maxWorkerThreadsPerJob: 512
+  # AWS credentials can be passed as ENV variables (S3 bucket access)
+  #awsDefaultRegion:
+  #awsAccessKeyId:
+  #awsSecretAccessKey:
+
+# Load Service property values
+load:
+  imageName: parquet-load-service
+  # AWS credentials can be passed as ENV variables (for S3 bucket access)
+  #awsDefaultRegion:
+  #awsAccessKeyId:
+  #awsSecretAccessKey:
+
+# Masking Service property values
+#masking:
+  #intelligentLoadBalance: true
+

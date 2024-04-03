@@ -1,0 +1,34 @@
+#
+# Copyright (c) 2024 by Delphix. All rights reserved.
+#
+
+{{- if or (eq .Values.connectorType "delimited") (eq .Values.connectorType "parquet") }}
+{{- if (eq .Values.unloadStorageType "FS") }}
+{{- if and (not .Values.unloadStoragePvName) (not .Values.unloadStoragePvcName) }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: unload-storage-pv
+  labels:
+    io.hyperscale.service: unload-storage-pv
+spec:
+  capacity:
+    storage: {{ .Values.unloadStorageSize }}
+  {{- if ( .Values.unloadStorageAccessMode) }}
+  accessModes: {{ .Values.unloadStorageAccessMode | toYaml | nindent 2 }}
+  {{- end }}
+  {{- if and (.Values.nfsUnloadStorageHost) (.Values.nfsUnloadStorageExportPath) }}
+  {{- if ( .Values.unloadStorageMountOption) }}
+  mountOptions: {{ .Values.unloadStorageMountOption | toYaml | nindent 2 }}
+  {{- end }}
+  nfs:
+    path: {{ .Values.nfsUnloadStorageExportPath }}
+    server: {{ .Values.nfsUnloadStorageHost }}
+  {{- else }}
+  hostPath:
+    path: {{ .Values.unloadStoragePath }}
+  {{- end }}
+  storageClassName: {{- if (not .Values.unloadStorageClass) }} "" {{- else }} {{ .Values.unloadStorageClass }} {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

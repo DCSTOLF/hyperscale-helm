@@ -1,0 +1,35 @@
+#
+# Copyright (c) 2024 by Delphix. All rights reserved.
+#
+
+{{- if or (eq .Values.connectorType "delimited") (eq .Values.connectorType "parquet") }}
+{{- if (eq .Values.loadStorageType "FS") }}
+{{- if and (not .Values.loadStoragePvName) (not .Values.loadStoragePvcName) }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: load-storage-pv
+  labels:
+    io.hyperscale.service: load-storage-pv
+spec:
+  capacity:
+    storage: {{ .Values.loadStorageSize }}
+  {{- if ( .Values.loadStorageAccessMode) }}
+  accessModes: {{ .Values.loadStorageAccessMode | toYaml | nindent 2 }}
+  {{- end }}
+  {{- if and (.Values.nfsLoadStorageHost) (.Values.nfsLoadStorageExportPath) }}
+  {{- if ( .Values.loadStorageMountOption) }}
+  mountOptions: {{ .Values.loadStorageMountOption | toYaml | nindent 2 }}
+  {{- end }}
+  nfs:
+    path: {{ .Values.nfsLoadStorageExportPath }}
+    server: {{ .Values.nfsLoadStorageHost }}
+  {{- else }}
+  hostPath:
+    path: {{ .Values.loadStoragePath }}
+  {{- end }}
+  storageClassName: {{- if (not .Values.loadStorageClass) }} "" {{- else }} {{ .Values.loadStorageClass }} {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+

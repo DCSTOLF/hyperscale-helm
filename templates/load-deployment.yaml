@@ -1,0 +1,129 @@
+#
+# Copyright (c) 2023, 2024 by Delphix. All rights reserved.
+#
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.hyperscale.service: load-service
+  name: load-service
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.hyperscale.service: load-service
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        io.hyperscale.service: load-service
+    spec:
+      {{- if .Values.load.nodeName }}
+      nodeName: {{ .Values.load.nodeName }}
+      {{- end }}
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- if .Values.serviceAccountName }}
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      {{- end }}
+      containers:
+        - env:
+            {{- if .Values.load.loggingLevelRoot }}
+            - name: LOGGING_LEVEL_COM_DELPHIX_HYPERSCALE
+              value: {{ .Values.load.loggingLevelRoot | quote }}
+            {{- end }}
+            - name: MDS_NAME
+              value: "load-db"
+            {{- if .Values.load.sqlldrBlobClobCharLength }}
+            - name: SQLLDR_BLOB_CLOB_CHAR_LENGTH
+              value: {{ .Values.load.sqlldrBlobClobCharLength | quote }}
+            {{- end }}
+            - name: MASKING_SERVICE_BASE_URL
+              value: {{ .Values.maskingServiceBaseURL }}
+            {{- if or
+                (and
+                  (eq .Values.load.imageName "delimited-load-service")
+                  (eq .Values.unload.imageName "delimited-unload-service")
+                )
+                (and
+                  (eq .Values.load.imageName "parquet-load-service")
+                  (eq .Values.unload.imageName "parquet-unload-service")
+                )
+            }}
+            - name: UNLOAD_SERVICE_BASE_URL
+              value: {{ .Values.unloadServiceBaseURL }}
+            {{- end }}
+            {{- if .Values.load.awsDefaultRegion }}
+            - name: AWS_DEFAULT_REGION
+              value: {{ .Values.load.awsDefaultRegion }}
+            {{- end }}
+            {{- if .Values.load.awsAccessKeyId }}
+            - name: AWS_ACCESS_KEY_ID
+              value: {{ .Values.load.awsAccessKeyId }}
+            {{- end }}
+            {{- if .Values.load.awsSecretAccessKey }}
+            - name: AWS_SECRET_ACCESS_KEY
+              value: {{ .Values.load.awsSecretAccessKey }}
+            {{- end }}
+            {{- if .Values.load.hikariMaxLifeTime }}
+            - name: HIKARI_MAX_LIFE_TIME
+              value: {{ .Values.load.hikariMaxLifeTime | quote}}
+            {{- end }}
+            {{- if .Values.load.hikariKeepAliveTime }}
+            - name: HIKARI_KEEP_ALIVE_TIME
+              value: {{ .Values.load.hikariKeepAliveTime | quote}}
+            {{- end }}
+          {{- if not .Values.isDev }}
+          image: {{ .Values.imageCredentials.registry }}:{{ .Values.load.imageName }}-{{ .Values.imageCredentials.tag }}
+          {{- end }}
+          {{- if .Values.isDev }}
+          {{- if eq .Values.isDev true }}
+          image: {{ .Values.imageCredentials.registry }}/{{ .Values.load.imageName }}:{{ .Values.imageCredentials.tag }}
+          {{- end }}
+          {{- end }}
+          name: load-service
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          ports:
+            - containerPort: 8080
+            - containerPort: 9094
+          resources: {}
+          volumeMounts:
+            - mountPath: /data
+              name: load-database
+            {{- if eq .Values.load.imageName "oracle-load-service" }}
+            - mountPath: /usr/lib/instantclient
+              name: instant-client
+              subPath: {{ .Values.instantClientRootDirName }}
+            {{- end }}
+            - mountPath: /etc/hyperscale
+              name: stage-storage
+            {{- if or (eq .Values.connectorType "delimited") (eq .Values.connectorType "parquet") }}
+            {{- if (eq .Values.loadStorageType "FS") }}
+            - mountPath: /mnt/target
+              name: load-storage
+            {{- end }}
+            {{- end }}
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: delphixregistrykey
+      volumes:
+        - name: load-database
+          persistentVolumeClaim:
+            claimName: {{ .Values.load.dbPvcName | default "load-database-pvc" }}
+        - name: stage-storage
+          persistentVolumeClaim:
+            claimName: {{ .Values.stagePvcName | default "stage-storage-pvc" }}
+        {{- if eq .Values.load.imageName "oracle-load-service" }}
+        - name: instant-client
+          persistentVolumeClaim:
+            claimName: {{ .Values.instantClientPvcName | default "instant-client-pvc" }}
+        {{- end }}
+        {{- if or (eq .Values.connectorType "delimited") (eq .Values.connectorType "parquet") }}
+        {{- if (eq .Values.loadStorageType "FS") }}
+        - name: load-storage
+          persistentVolumeClaim:
+            claimName: {{ .Values.loadStoragePvcName | default "load-storage-pvc" }}
+        {{- end }}
+        {{- end }}
+status: {}

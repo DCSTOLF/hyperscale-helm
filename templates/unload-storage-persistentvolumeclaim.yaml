@@ -1,0 +1,25 @@
+#
+# Copyright (c) 2024 by Delphix. All rights reserved.
+#
+
+{{- if or (eq .Values.connectorType "delimited") (eq .Values.connectorType "parquet") }}
+{{- if and (not .Values.unloadStoragePvcName) (eq .Values.unloadStorageType "FS") }}
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    io.hyperscale.service: unload-storage-pvc
+  name: unload-storage-pvc
+  namespace: {{ .Values.namespace }}
+spec:
+  {{- if ( .Values.unloadStorageAccessMode) }}
+  accessModes: {{ .Values.unloadStorageAccessMode | toYaml | nindent 2 }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.unloadStorageSize }}
+  volumeName: {{ .Values.unloadStoragePvName | default "unload-storage-pv" }}
+  storageClassName: {{- if (not .Values.unloadStorageClass) }} "" {{- else }} {{ .Values.unloadStorageClass }} {{- end }}
+{{- end }}
+{{- end }}

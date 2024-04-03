@@ -1,0 +1,133 @@
+#
+# Copyright (c) 2023, 2024 by Delphix. All rights reserved.
+#
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.hyperscale.service: controller-service
+  name: controller-service
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.hyperscale.service: controller-service
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        io.hyperscale.service: controller-service
+    spec:
+      {{- if .Values.controller.nodeName }}
+      nodeName: {{ .Values.controller.nodeName }}
+      {{- end }}
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- if .Values.serviceAccountName }}
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      {{- end }}
+      containers:
+        - env:
+            - name: API_KEY_CREATE
+              value: {{ .Values.controller.apiKeyCreate | quote }}
+            - name: API_VERSION_COMPATIBILITY_STRICT_CHECK
+              value: {{ .Values.controller.apiVersionCompatibilityStrictCheck | quote }}
+            - name: EXECUTION_STATUS_POLL_DURATION
+              value: {{ .Values.controller.executionStatusPollDuration | quote }}
+            - name: LOAD_SERVICE_REQUIREPOSTLOAD
+              value: {{ .Values.controller.loadServiceRequirepostload | quote }}
+            {{- if .Values.controller.loggingLevelRoot }}
+            - name: LOGGING_LEVEL_COM_DELPHIX_HYPERSCALE
+              value: {{ .Values.controller.loggingLevelRoot | quote }}
+            {{- end }}
+            {{- if .Values.controller.skipUnloadSplitCountValidation }}
+            - name: SKIP_UNLOAD_SPLIT_COUNT_VALIDATION
+              value: {{ .Values.controller.skipUnloadSplitCountValidation | quote }}
+            {{- end }}
+            {{- if .Values.controller.skipLoadSplitCountValidation }}
+            - name: SKIP_LOAD_SPLIT_COUNT_VALIDATION
+              value: {{ .Values.controller.skipLoadSplitCountValidation | quote }}
+            {{- end }}
+            - name: MASKING_SERVICE_BASE_URL
+              value: {{ .Values.maskingServiceBaseURL }}
+            - name: UNLOAD_SERVICE_BASE_URL
+              value: {{ .Values.unloadServiceBaseURL }}
+            - name: LOAD_SERVICE_BASE_URL
+              value: {{ .Values.loadServiceBaseURL }}
+            - name: MDS_NAME
+              value: "controller-db"
+            {{- if .Values.controller.cancelStatusPollDuration }}
+            - name: CANCEL_STATUS_POLL_DURATION
+              value: {{ .Values.controller.cancelStatusPollDuration | quote }}
+            {{- end }}
+            {{- if or
+              (and 
+                (eq .Values.load.imageName "delimited-load-service")
+                (eq .Values.unload.imageName "delimited-unload-service")
+              )
+              (and 
+                (eq .Values.load.imageName "parquet-load-service")
+                (eq .Values.unload.imageName "parquet-unload-service")
+              )
+            }}
+            - name: SOURCE_KEY_FIELD_NAMES
+              value: "unique_source_files_identifier"
+            {{- end }}
+
+            # MongoDB connector specific changes
+            {{- if and
+                (eq .Values.load.imageName "mongo-load-service")
+                (eq .Values.unload.imageName "mongo-unload-service")
+            }}
+            - name: SOURCE_KEY_FIELD_NAMES
+              value: {{ .Values.controller.sourceKeyFieldNames | quote }}
+            - name: VALIDATE_UNLOAD_ROW_COUNT_FOR_STATUS
+              value: {{ .Values.controller.validateUnloadRowCountForStatus | quote }}
+            - name: VALIDATE_MASKED_ROW_COUNT_FOR_STATUS
+              value: {{ .Values.controller.validateMaskedRowCountForStatus | quote }}
+            - name: VALIDATE_LOAD_ROW_COUNT_FOR_STATUS
+              value: {{ .Values.controller.validateLoadRowCountForStatus | quote }}
+            - name: DISPLAY_BYTES_INFO_IN_STATUS
+              value: {{ .Values.controller.displayBytesInfoInStatus | quote }}
+            - name: DISPLAY_ROW_COUNT_IN_STATUS
+              value: {{ .Values.controller.displayRowCountInStatus | quote }}
+            {{- end }}
+
+          {{- if not .Values.isDev }}
+          image: {{ .Values.imageCredentials.registry }}:controller-service-{{ .Values.imageCredentials.tag }}
+          {{- end }}
+          {{- if .Values.isDev }}
+          {{- if eq .Values.isDev true }}
+          image: {{ .Values.imageCredentials.registry }}/controller-service:{{ .Values.imageCredentials.tag }}
+          {{- end }}
+          {{- end }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+#          livenessProbe:
+#            exec:
+#              command:
+#                - curl --fail --silent http://localhost:8080/actuator/health | grep UP || exit 1
+#            failureThreshold: 3
+#            initialDelaySeconds: 30
+#            periodSeconds: 30
+#            timeoutSeconds: 25
+          name: controller-service
+          ports:
+            - containerPort: 8080
+          resources: {}
+          volumeMounts:
+            - mountPath: /data
+              name: controller-database
+            - mountPath: /etc/hyperscale
+              name: stage-storage
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: delphixregistrykey
+      volumes:
+        - name: controller-database
+          persistentVolumeClaim:
+            claimName: {{ .Values.controller.dbPvcName | default "controller-database-pvc" }}
+        - name: stage-storage
+          persistentVolumeClaim:
+            claimName: {{ .Values.stagePvcName | default "stage-storage-pvc" }}
+status: {}

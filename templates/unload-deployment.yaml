@@ -1,0 +1,140 @@
+#
+# Copyright (c) 2023, 2024 by Delphix. All rights reserved.
+#
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.hyperscale.service: unload-service
+  name: unload-service
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.hyperscale.service: unload-service
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        io.hyperscale.service: unload-service
+    spec:
+      {{- if .Values.unload.nodeName }}
+      nodeName: {{ .Values.unload.nodeName }}
+      {{- end }}
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- if .Values.serviceAccountName }}
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      {{- end }}
+      containers:
+        - env:
+             {{- if .Values.unload.loggingLevelRoot }}
+            - name: LOGGING_LEVEL_COM_DELPHIX_HYPERSCALE
+              value: {{ .Values.unload.loggingLevelRoot | quote }}
+            {{- end }}
+            {{- if .Values.unload.fetchRows }}
+            - name: UNLOAD_FETCH_ROWS
+              value: {{ .Values.unload.fetchRows | quote }}
+            {{- end }}
+            - name: MASKING_SERVICE_BASE_URL
+              value: {{ .Values.maskingServiceBaseURL }}
+            - name: MDS_NAME
+              value: "unload-db"
+            - name: ROOT_UNLOAD_PATH
+              value: "/etc/hyperscale"
+            {{- if .Values.unload.maxWorkerThreadsPerJob }}
+            - name: MAX_WORKER_THREADS_PER_JOB
+              value: {{ .Values.unload.maxWorkerThreadsPerJob | quote }}
+            {{- end }}
+            {{- if .Values.unload.dataWriterType }}
+            - name: DATA_WRITER_TYPE
+              value: {{ .Values.unload.dataWriterType | quote }}
+            {{- end }}
+            {{- if .Values.unload.awsDefaultRegion }}
+            - name: AWS_DEFAULT_REGION
+              value: {{ .Values.unload.awsDefaultRegion }}
+            {{- end }}
+            {{- if .Values.unload.awsAccessKeyId }}
+            - name: AWS_ACCESS_KEY_ID
+              value: {{ .Values.unload.awsAccessKeyId }}
+            {{- end }}
+            {{- if .Values.unload.awsSecretAccessKey }}
+            - name: AWS_SECRET_ACCESS_KEY
+              value: {{ .Values.unload.awsSecretAccessKey }}
+            {{- end }}
+
+            # MongoDB connector specific changes
+            {{- if and 
+                (eq .Values.load.imageName "mongo-load-service")
+                (eq .Values.unload.imageName "mongo-unload-service")
+            }}
+            - name: CONCURRENT_EXPORT_LIMIT
+              value: {{ .Values.unload.concurrentExportLimit | quote }}
+            - name: LOAD_SERVICE_BASE_URL
+              value: {{ .Values.loadServiceBaseURL }}
+            - name: CONTROLLER_SERVICE_BASE_URL
+              value: {{ .Values.controllerServiceBaseURL }}
+            {{- end }}
+
+            {{- if .Values.unload.hikariMaxLifeTime }}
+            - name: HIKARI_MAX_LIFE_TIME
+              value: {{ .Values.unload.hikariMaxLifeTime | quote}}
+            {{- end }}
+            {{- if .Values.unload.hikariKeepAliveTime }}
+            - name: HIKARI_KEEP_ALIVE_TIME
+              value: {{ .Values.unload.hikariKeepAliveTime | quote}}
+            {{- end }}
+            {{- if .Values.unload.fileDelimiter }}
+            - name: FILE_DELIMITER
+              value: {{ .Values.unload.fileDelimiter }}
+            {{- end }}
+            {{- if .Values.unload.fileEnclosure }}
+            - name: FILE_ENCLOSURE
+              value: {{ .Values.unload.fileEnclosure }}
+            {{- end }}
+            {{- if .Values.unload.fileEscapeEnclosure }}
+            - name: FILE_ESCAPE_ENCLOSURE
+              value: {{ .Values.unload.fileEscapeEnclosure }}
+            {{- end }}
+          {{- if not .Values.isDev }}
+          image: {{ .Values.imageCredentials.registry }}:{{ .Values.unload.imageName }}-{{ .Values.imageCredentials.tag }}
+          {{- end }}
+          {{- if .Values.isDev }}
+          {{- if eq .Values.isDev true }}
+          image: {{ .Values.imageCredentials.registry }}/{{ .Values.unload.imageName }}:{{ .Values.imageCredentials.tag }}
+          {{- end }}
+          {{- end }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          name: unload-service
+          resources: {}
+          volumeMounts:
+            - mountPath: /data
+              name: unload-database
+            - mountPath: /etc/hyperscale
+              name: stage-storage
+            {{- if or (eq .Values.connectorType "delimited") (eq .Values.connectorType "parquet") }}
+            {{- if (eq .Values.unloadStorageType "FS") }}
+            - mountPath: /mnt/source
+              name: unload-storage
+            {{- end }}
+            {{- end }}
+      restartPolicy: Always
+
+      imagePullSecrets:
+        - name: delphixregistrykey
+      volumes:
+        - name: unload-database
+          persistentVolumeClaim:
+            claimName: {{ .Values.unload.dbPvcName | default "unload-database-pvc" }}
+        - name: stage-storage
+          persistentVolumeClaim:
+            claimName: {{ .Values.stagePvcName | default "stage-storage-pvc" }}
+        {{- if or (eq .Values.connectorType "delimited") (eq .Values.connectorType "parquet") }}
+        {{- if (eq .Values.unloadStorageType "FS") }}
+        - name: unload-storage
+          persistentVolumeClaim:
+            claimName: {{ .Values.unloadStoragePvcName | default "unload-storage-pvc" }}
+        {{- end }}
+        {{- end }}
+status: {}

@@ -1,0 +1,70 @@
+#
+# Copyright (c) 2023, 2024 by Delphix. All rights reserved.
+#
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.hyperscale.service: proxy
+  name: proxy
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.hyperscale.service: proxy
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        io.hyperscale.service: proxy
+    spec:
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- if .Values.serviceAccountName }}
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      {{- end }}
+      containers:
+        - imagePullPolicy: {{ .Values.imagePullPolicy }}
+          {{- if not .Values.isDev }}
+          image: {{ .Values.imageCredentials.registry }}:proxy-{{ .Values.imageCredentials.tag }}
+          {{- end }}
+          {{- if .Values.isDev }}
+          {{- if eq .Values.isDev true }}
+          image: {{ .Values.imageCredentials.registry }}/proxy:{{ .Values.imageCredentials.tag }}
+          {{- end }}
+          {{- end }}
+          env:
+            - name: API_KEY_ENABLED
+              value: {{ .Values.apiKeyEnabled | quote }}
+            - name: IS_K8S
+              value: "true"
+#            - name: OPEN_ID_ENABLED
+#              value: {{ .Values.openIdEnabled | quote }}
+#            - name: OPEN_ID_SERVER_URL
+#              value: {{ .Values.openIdServerUrl | quote }}
+#            - name: JWT_CLAIM_FOR_CLIENTID
+#              value: {{ .Values.jwtClaimForClientId | quote }}
+#            - name: JWT_CLAIM_FOR_CLIENTNAME
+#              value: {{ .Values.jwtClaimForClientName | quote }}
+          name: proxy
+          ports:
+            - containerPort: 8443
+          {{- if .Values.proxy.resources }}
+          resources: {{- toYaml .Values.proxy.resources | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            {{- if and (.Values.proxy.crt) (.Values.proxy.key) }}
+            - mountPath: /ssl
+              name: proxy-certificate
+            {{- end }}
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: delphixregistrykey
+      volumes:
+        {{- if and (.Values.proxy.crt) (.Values.proxy.key) }}
+        - name: proxy-certificate
+          secret:
+            secretName: proxy-certificate
+        {{- end }}
+status: {}

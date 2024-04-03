@@ -1,0 +1,51 @@
+#
+# Copyright (c) 2024 by Delphix. All rights reserved.
+#
+
+
+# instant client storage size
+instantClientStorageSize: 3Gi
+instantClientAccessMode: [ReadWriteOnce]
+
+# root directory name of instant client (enable this property if you are running Oracle Load service)
+instantClientRootDirName: instantclient
+
+# enable following two properties  if you are using oracle load service  and instantClient is installed on NFS
+#nfsInstantClientHost: 10.119.138.62
+#nfsInstantClientExportPath: /home/hyperscale/mount/mount-name
+#instantClientMountOption: [nfsvers=4.2]
+
+#instant client PV for static binding with corresponding PVC, it will be used if instantClientPvcName is not given
+#instantClientPvName: instant-client-pv
+
+#instant client PVC for static binding with corresponding oracle load service
+#instantClientPvcName: instant-client-pvc
+
+#Storage class for instant client Volume
+#instantClientStorageClass: slow
+
+# Controller service level property values
+controller:
+  skipUnloadSplitCountValidation: false
+  skipLoadSplitCountValidation: false
+
+# Unload Service property values
+unload:
+  fetchRows: 10000
+  imageName: oracle-unload-service
+  hikariMaxLifeTime: !!string 1800000
+  hikariKeepAliveTime: 300000
+#  fileDelimiter: ,
+#  fileEnclosure: \u0022
+#  fileEscapeEnclosure: \u0022
+
+# Load Service property values
+load:
+  sqlldrBlobClobCharLength: 20000
+  imageName: oracle-load-service
+  hikariMaxLifeTime: !!string 1800000
+  hikariKeepAliveTime: 300000
+
+# Masking Service property values
+#masking:
+#  intelligentLoadBalance: true

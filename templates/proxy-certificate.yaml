@@ -1,0 +1,15 @@
+#
+# Copyright (c) 2023 by Delphix. All rights reserved.
+#
+  {{- if and (.Values.proxy.crt) (.Values.proxy.key) }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: proxy-certificate
+  namespace: {{ .Values.namespace }}
+data:
+  nginx.crt: {{ .Values.proxy.crt }}
+  nginx.key: {{ .Values.proxy.key }}
+  dhparam.pem: {{ .Values.proxy.dhparam }}
+type: Opaque
+  {{- end }}

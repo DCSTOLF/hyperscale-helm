@@ -1,0 +1,23 @@
+#
+# Copyright (c) 2024 by Delphix. All rights reserved.
+#
+
+  {{- if (not .Values.stagePvcName) }}
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    io.hyperscale.service: stage-storage-pvc
+  name: stage-storage-pvc
+  namespace: {{ .Values.namespace }}
+spec:
+  {{- if ( .Values.stageAccessMode) }}
+  accessModes: {{ .Values.stageAccessMode | toYaml | nindent 2 }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.stageStorageSize }}
+  volumeName: {{ .Values.stagePvName | default "stage-storage-pv" }}
+  storageClassName: {{- if (not .Values.stageStorageClass) }} "" {{- else }} {{ .Values.stageStorageClass }} {{- end }}
+  {{- end }}

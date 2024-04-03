@@ -1,0 +1,30 @@
+#
+# Copyright (c) 2023, 2024 by Delphix. All rights reserved.
+  #
+
+  {{- if eq .Values.load.imageName "oracle-load-service" }}
+  {{- if and (not .Values.instantClientPvName) (not .Values.instantClientPvcName) }}
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: instant-client-pv
+  labels:
+    io.hyperscale.service: instant-client-pv
+spec:
+  capacity:
+    storage: {{ .Values.instantClientStorageSize }}
+  {{- if (.Values.instantClientAccessMode) }}
+  accessModes: {{ .Values.instantClientAccessMode | toYaml | nindent 2 }}
+  {{- end }}
+  {{- if and (.Values.nfsInstantClientHost) (.Values.nfsInstantClientExportPath) }}
+  {{- if ( .Values.instantClientMountOption) }}
+  mountOptions: {{ .Values.instantClientMountOption | toYaml | nindent 2 }}
+  {{- end }}
+  nfs:
+    path: {{ .Values.nfsInstantClientExportPath }}
+    server: {{ .Values.nfsInstantClientHost }}
+  {{- end }}
+  storageClassName: {{- if (not .Values.instantClientStorageClass) }} "" {{- else }} {{ .Values.instantClientStorageClass }} {{- end }}
+  {{- end }}
+  {{- end }}
